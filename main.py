@@ -1,6 +1,9 @@
 from PIL import Image
 import PIL, os
 
+formats = [ 'BMP', 'DIB', 'EPS', 'GIF', 'ICNS', 'ICO', 'IM', 'JPEG', 'JPEG 2000', 'MSP',
+            'PCX', 'PNG', 'PPM', 'SQI', 'SPIDER', 'TGA', 'TIFF', 'WebP', 'XBM'  ]
+
 #--------------------------------
 def open_image(path):
     try:
@@ -16,22 +19,58 @@ def open_image(path):
         return image
 
 #--------------------------------
-def convert_to(type_format, image, path, name):
-    name += '.' + type_format
-    path += chr(92) + name
+def convert_to(type_format, image):
+    modes = ['F', 'I', 'HSV', 'LAB', 'YCbCr', 'CMYK', 'RGBA', 'RGB', 'P', 'L', '1']
+    type_format = type_format.upper()
 
-    print('\nSaving...')
+    for mode in modes:
+        try:
+            image.convert(mode)
+            image.save('test_converter', type_format)
+        except:
+            pass
+        finally:
+            image.convert(mode)
+            return image
 
+#--------------------------------
+def check_type(type_file):
+    jpg = ['.jpg', '.jpeg', '.jpe' '.jif', '.jfif', '.jfi']
+    jpg2 = ['.jp2', '.j2k', '.jpf', '.jpx', '.jpm', '.mj2']
+    spider = '.spi'
+    tga = ['.tga', '.tpic'] 
+    tiff = ['.tif', '.tiff'] 
+    webp = '.webp'
+
+    if type_file in jpg:
+        return 'JPEG'
+    elif type_file in jpg2:
+        return 'JPEG 2000'
+    elif type_file == spider:
+        return 'SPIDER'
+    elif type_file in tga:
+        return 'TGA'
+    elif type_file in tiff:
+        return 'TIFF'
+    elif type_file == webp:
+        return 'WebP'
+    else:
+        return type_file[1:].upper()
+
+#--------------------------------
+def save_image(type_file, image, path, name):
+    if type_file[0] != '.':
+        type_file = '.' + type_file
+
+    type_file = type_file.lower()
+    name += type_file
+    path = os.path.join(path, name)
+    type_format = check_type(type_file)
+    
     try:
-        image.load()
-
-        if image.getbands() != ('R', 'G', 'B'):
-            background = Image.new("RGB", image.size, (255, 255, 255))
-            background.paste(image, mask = image.split()[3])
-            background.save(path, type_format, quality=100)
-            
-        else:
-            image.save(path)
+        print('\nSaving...')
+        image = convert_to(type_format, image)
+        image.save(path, type_format)
 
     except OSError:
         print("Cannot converting")
@@ -41,7 +80,7 @@ def convert_to(type_format, image, path, name):
         print('Complete')
 
 #================================================================
-if __name__ == "__main__":
+if __name__ == "d__main__":
     img = None
 
     print("Type path to image...")
@@ -57,8 +96,5 @@ if __name__ == "__main__":
         if img == None:
             print("Pleas type path again")
 
-    print("\nSave in...")
-    path = input('>: ')
-
-    
-    convert_to('bmp', img, path, 'GTX')
+img = open_image('img_lights.png')
+save_image('tga', img, os.getcwd(), 'x')
